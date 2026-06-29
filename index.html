@@ -697,7 +697,7 @@
 
                         // กำลังดำเนินงาน (In-progress) -> แสดงผลสีฟ้าทั้งในปฏิทินและ excel
                         if (item.inprogress) {
-                            let dueHtml = item.duedate ? `<div class="text-[8px] text-sky-900 bg-sky-200/50 rounded px-1 mt-1 font-semibold w-fit">📅 กำหนด: ${formatThaiShortDate(item.duedate)}</div>` : '';
+                            let dueHtml = item.duedate ? `<div class="text-[8px] text-sky-900 bg-sky-200/50 rounded px-1 mt-1 font-semibold w-fit">📅 กำหนดเสร็จ: ${item.duedate.split('T')[0].split('-').reverse().join('/')}</div>` : '';
                             segments.push(`
                                 <div class="bg-sky-100 text-sky-900 border border-sky-200 text-[10px] p-1.5 rounded-lg font-bold leading-tight flex flex-col gap-0.5 shadow-sm">
                                     <div class="text-[9px] text-sky-950 font-black flex items-center gap-1">
@@ -799,7 +799,7 @@
                                 }
                                 // กำลังดำเนินงาน (In-progress) -> แสดงผลสีฟ้า
                                 if (item.inprogress) {
-                                    const dueText = item.duedate ? `<div class="text-[8px] text-sky-900 bg-sky-200/50 rounded px-1 py-0.5 mt-1 font-bold w-fit">📅 กำหนด: ${formatThaiShortDate(item.duedate)}</div>` : '';
+                                    const dueText = item.duedate ? `<div class="text-[8px] text-sky-900 bg-sky-200/50 rounded px-1 py-0.5 mt-1 font-bold w-fit">📅 กำหนดเสร็จ: ${item.duedate.split('T')[0].split('-').reverse().join('/')}</div>` : '';
                                     cellContent += `<div class="bg-sky-50 text-sky-900 border border-sky-100 p-1.5 rounded-lg text-[10px] mb-1 font-semibold leading-relaxed shadow-xs">
                                         <div class="font-black text-sky-950 mb-0.5">🏗️ In-progress:</div>
                                         <div class="whitespace-pre-wrap font-medium">${item.inprogress}</div>
@@ -839,7 +839,7 @@
                     : '<span class="text-slate-300">-</span>';
 
                 const dueCell = row.duedate 
-                    ? `<span class="bg-slate-100 border text-slate-700 px-2.5 py-1 rounded-full text-xs font-mono font-bold"><i class="fa-solid fa-calendar-day mr-1"></i>${formatThaiShortDate(row.duedate)}</span>` 
+                    ? `<span class="bg-slate-100 border text-slate-700 px-2.5 py-1 rounded-full text-xs font-mono font-bold"><i class="fa-solid fa-calendar-day mr-1"></i>${item.duedate.split('T')[0].split('-').reverse().join('/')}</span>` 
                     : '<span class="text-slate-300">-</span>';
 
                 const plansCell = row.plans 
@@ -958,7 +958,7 @@
                     }
 
                     if (task.inprogress) {
-                        const dueLabel = task.duedate ? `<span class="text-[9px] bg-sky-200/50 text-sky-900 px-1.5 py-0.5 rounded-md font-bold ml-2">📅 กำหนดเสร็จ: ${formatThaiShortDate(task.duedate)}</span>` : '';
+                        const dueLabel = task.duedate ? `<span class="text-[9px] bg-sky-200/50 text-sky-900 px-1.5 py-0.5 rounded-md font-bold ml-2">📅 กำหนดเสร็จ: ${item.duedate.split('T')[0].split('-').reverse().join('/')}</span>` : '';
                         taskHtml += `
                             <div class="space-y-1">
                                 <span class="inline-flex items-center gap-1.5 text-[10px] font-bold bg-sky-100 text-sky-800 border border-sky-200 px-2.5 py-0.5 rounded-md">
