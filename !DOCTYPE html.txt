@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบรายงานงานประจำวัน - Daily Task App</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts (Sarabun & Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Sarabun', 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between">
+
+    <!-- แถบเมนูด้านบน (Top Navigation Bar) -->
+    <nav class="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3.5 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-indigo-600 w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-md">
+                    <i class="fa-solid fa-list-check text-xl"></i>
+                </div>
+                <div>
+                    <span class="text-xs text-indigo-400 font-bold block leading-none">ระบบรายงานงานประจำวัน</span>
+                    <h1 class="text-base font-bold text-white tracking-wide">Daily Task App</h1>
+                </div>
+            </div>
+            
+            <div id="mode-badge" class="bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-full text-xs flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></span>
+                <span id="current-mode-txt" class="text-slate-300 font-semibold">หน้าแรก</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- พื้นที่แสดงเนื้อหาหลัก (Main Content Area) -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 flex flex-col justify-center">
+        
+        <!-- ================= หน้าที่ 1: หน้าแรกต้อนรับและเลือกโหมดการใช้งาน ================= -->
+        <section id="page-login" class="block max-w-md w-full mx-auto my-6 space-y-8">
+            <div class="text-center space-y-3">
+                <h2 class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">ยินดีต้อนรับ</h2>
+                <div class="h-2"></div>
+                <p class="text-slate-600 font-bold text-base sm:text-lg">กรุณาเลือกโหมดการเข้าใช้งาน</p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-5">
+                <!-- กล่อง 1: สำหรับพนักงาน (แบบฟอร์มบันทึกข้อมูล) -->
+                <button onclick="goToPage('page-form'); updateModeText('โหมดพนักงาน (กรอกรายงาน)');" class="group bg-white hover:bg-indigo-50/50 p-6 rounded-2xl shadow-md hover:shadow-xl border-2 border-transparent hover:border-indigo-400 transition-all duration-200 text-left flex items-start gap-5">
+                    <div class="bg-indigo-100 text-indigo-600 w-14 h-14 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition duration-200 shrink-0">
+                        <i class="fa-solid fa-file-signature"></i>
+                    </div>
+                    <div class="space-y-1">
+                        <h3 class="font-extrabold text-slate-900 text-lg group-hover:text-indigo-600 transition">สำหรับพนักงาน</h3>
+                        <p class="text-slate-500 text-sm leading-relaxed">กรอกบันทึกรายงานภารกิจประจำวันผ่านแบบฟอร์มรายงานผลงาน</p>
+                    </div>
+                </button>
+
+                <!-- กล่อง 2: สำหรับหัวหน้างาน (ดูสรุปปฏิทินและแผ่นตารางงาน) -->
+                <button onclick="goToPage('page-admin'); updateModeText('โหมดหัวหน้างาน (ดูปฏิทิน/สรุปงาน)'); renderCalendarDashboard(); renderExcelView(); renderRawTable();" class="group bg-white hover:bg-emerald-50/50 p-6 rounded-2xl shadow-md hover:shadow-xl border-2 border-transparent hover:border-emerald-500 transition-all duration-200 text-left flex items-start gap-5">
+                    <div class="bg-emerald-100 text-emerald-600 w-14 h-14 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition duration-200 shrink-0">
+                        <i class="fa-solid fa-user-tie"></i>
+                    </div>
+                    <div class="space-y-1">
+                        <h3 class="font-extrabold text-slate-900 text-lg group-hover:text-emerald-600 transition">สำหรับหัวหน้างาน</h3>
+                        <p class="text-slate-500 text-sm leading-relaxed">ดูปฏิทินปฏิบัติงานรายเดือน ตารางสรุปงาน Excel และนำข้อมูลออกวิเคราะห์</p>
+                    </div>
+                </button>
+            </div>
+        </section>
+
+        <!-- ================= หน้าที่ 2: แบบฟอร์มรายงานผลงาน (GOOGLE FORM STYLE) ================= -->
+        <section id="page-form" class="hidden max-w-2xl w-full mx-auto my-4 space-y-6">
+            <!-- ปุ่มกดกลับหน้าแรก -->
+            <button onclick="goToPage('page-login'); updateModeText('หน้าแรก');" class="inline-flex items-center gap-2 text-slate-600 hover:text-indigo-600 font-bold text-sm bg-white px-4 py-2 rounded-xl shadow-xs border border-slate-200 transition">
+                <i class="fa-solid fa-house"></i> กลับสู่หน้าแรก
+            </button>
+
+            <!-- แถบสีตกแต่งด้านบนแบบฟอร์ม -->
+            <div class="bg-indigo-700 h-3 rounded-t-3xl shadow-sm"></div>
+            
+            <div class="bg-white rounded-b-3xl shadow-md p-6 sm:p-8 border border-slate-200 space-y-6">
+                <div class="border-b border-slate-200 pb-4">
+                    <h2 class="text-2xl sm:text-3xl font-black text-slate-950">แบบฟอร์มติดตามงานประจำวัน (Daily Task Tracking)</h2>
+                    <p class="text-sm text-slate-500 mt-2">กรุณากรอกรายงานภารกิจที่ทำในแต่ละวัน ข้อมูลทั้งหมดจะบันทึกเข้าสู่ปฏิทินรายงานโดยอัตโนมัติ</p>
+                    <div class="text-xs text-rose-600 font-bold mt-3">* จำเป็นต้องกรอก</div>
+                </div>
+
+                <!-- รายการกรอกฟอร์ม -->
+                <div class="space-y-6">
+                    <!-- 1. ชื่อพนักงาน (Dropdown) -->
+                    <div class="bg-slate-50/50 p-5 rounded-2xl border border-slate-100 space-y-3">
+                        <label class="block text-base font-extrabold text-slate-900">
+                            1. ชื่อพนักงาน <span class="text-rose-500 font-bold text-lg">*</span>
+                        </label>
+                        <select id="form-name" onchange="handleFormNameChange()" class="w-full bg-white border-2 border-slate-200 focus:border-indigo-500 rounded-xl px-4 py-3 text-slate-800 text-base font-medium focus:outline-none focus:ring-0 transition">
+                            <option value="" disabled selected>-- เลือกรายชื่อ --</option>
+                            <option value="THS">THS</option>
+                            <option value="PTA">PTA</option>
+                            <option value="VSA">VSA</option>
+                            <option value="PSU">PSU</option>
+                            <option value="WMA">WMA</option>
+                            <option value="NCH">NCH</option>
+                            <option value="SSC">SSC</option>
+                            <option value="SDE">SDE</option>
+                            <option value="อื่นๆ">อื่นๆ</option>
+                        </select>
+                    </div>
+
+                    <!-- ช่องระบุชื่อเพิ่มเติมเมื่อเลือก 'อื่นๆ' -->
+                    <div id="other-input-container" class="hidden bg-amber-50 border border-amber-200 p-5 rounded-2xl space-y-3 transition-all duration-300 transform scale-95 opacity-0">
+                        <label class="block text-base font-extrabold text-amber-900">
+                            โปรดระบุชื่อผู้ใช้งานเพิ่มเติม <span class="text-rose-500 font-bold text-lg">*</span>
+                        </label>
+                        <input type="text" id="form-other-name" placeholder="กรอกชื่อ" class="w-full bg-white border-2 border-amber-200 focus:border-amber-500 rounded-xl px-4 py-3 text-slate-800 text-base transition">
+                    </div>
+
+                    <!-- 2. วันที่ทำงาน (Date Picker) -->
+                    <div class="bg-slate-50/50 p-5 rounded-2xl border border-slate-100 space-y-3">
+                        <label class="block text-base font-extrabold text-slate-900">
+                            2. วันที่ทำงาน <span class="text-rose-500 font-bold text-lg">*</span>
+                        </label>
+                        <input type="date" id="form-date" class="w-full bg-white border-2 border-slate-200 focus:border-indigo-500 rounded-xl px-4 py-3 text-slate-800 text-base font-medium focus:outline-none focus:ring-0 transition">
+                    </div>
+
+                    <!-- 3. งานที่ทำเสร็จวันนี้ (Complete) -->
+                    <div class="bg-slate-50/50 p-5 rounded-2xl border border-slate-100 space-y-3">
+                        <label class="block text-base font-extrabold text-slate-900">
+                            3. งานที่ทำเสร็จวันนี้ (Complete)
+                        </label>
+                        <textarea id="form-complete" rows="3" placeholder="เช่น&#10;1. วิเคราะห์โมเดลระบบขนส่งพัสดุ&#10;2. แก้ไขประสิทธิภาพฐานข้อมูล" class="w-full bg-white border-2 border-slate-200 focus:border-indigo-500 rounded-xl px-4 py-3 text-base text-slate-800 focus:outline-none focus:ring-0 transition placeholder:text-slate-400"></textarea>
+                    </div>
+
+                    <!-- 4. กำลังดำเนินงาน (In-progress) -->
+                    <div class="bg-slate-50/50 p-5 rounded-2xl border border-slate-100 space-y-3">
+                        <label class="block text-base font-extrabold text-slate-900">
+                            4. กำลังดำเนินงาน (In-progress)
+                        </label>
+                        <textarea id="form-inprogress" rows="3" placeholder="เช่น&#10;1. ออกแบบคู่มือใช้งานคลังสินค้า&#10;2. ประชุมสรุปโครงสร้างสัปดาห์หน้า" class="w-full bg-white border-2 border-slate-200 focus:border-indigo-500 rounded-xl px-4 py-3 text-base text-slate-800 focus:outline-none focus:ring-0 transition placeholder:text-slate-400"></textarea>
+                    </div>
+
+                    <!-- 5. กำหนดเสร็จ (Due-date) -->
+                    <div class="bg-slate-50/50 p-5 rounded-2xl border border-slate-100 space-y-3">
+                        <label class="block text-base font-extrabold text-slate-900 flex items-center gap-2">
+                            5. กำหนดเสร็จ (Due-date)
+                            <span class="text-xs bg-sky-100 text-sky-800 font-bold px-2.5 py-0.5 rounded-full"><i class="fa-solid fa-link"></i> งาน In-progress</span>
+                        </label>
+                        <input type="date" id="form-duedate" class="w-full bg-white border-2 border-slate-200 focus:border-indigo-500 rounded-xl px-4 py-3 text-slate-800 text-base font-medium focus:outline-none focus:ring-0 transition">
+                        <p class="text-[11px] text-slate-400">ระบบจะนำกำหนดวันส่งนี้ ไปประกบคู่แสดงคู่กับงานกำลังดำเนินงานในส่วนรายงาน</p>
+                    </div>
+
+                    <!-- 6. แผนงานวันพรุ่งนี้ (Plans) -->
+                    <div class="bg-slate-50/50 p-5 rounded-2xl border border-slate-100 space-y-3">
+                        <label class="block text-base font-extrabold text-slate-900">
+                            6. แผนงานวันพรุ่งนี้ (Plans)
+                        </label>
+                        <textarea id="form-plans" rows="3" placeholder="เช่น&#10;1. ทดสอบโครงสร้างเซิร์ฟเวอร์ระบบจริง&#10;2. ประสานงานเชื่อมโยง APIs เพิ่มเติม" class="w-full bg-white border-2 border-slate-200 focus:border-indigo-500 rounded-xl px-4 py-3 text-base text-slate-800 focus:outline-none focus:ring-0 transition placeholder:text-slate-400"></textarea>
+                    </div>
+                </div>
+
+                <!-- ปุ่มควบคุมการทำงาน -->
+                <div class="pt-4 border-t border-slate-100 flex gap-3">
+                    <button onclick="submitGoogleForm()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-base py-4 px-6 rounded-xl shadow-md transition-all active:scale-98 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> ส่งคำตอบ (Submit)
+                    </button>
+                    <button onclick="clearFormInputs()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold px-5 py-4 rounded-xl text-sm transition">
+                        ล้างฟอร์ม
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= หน้าที่ 3: แผงควบคุมสำหรับหัวหน้างาน (DASHBOARD) ================= -->
+        <section id="page-admin" class="hidden space-y-6 my-4 w-full">
+            
+            <!-- ส่วนบนแผงควบคุมหลัก -->
+            <div class="bg-white rounded-2xl shadow-md border border-slate-200 p-5 sm:p-6">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div class="space-y-1">
+                        <button onclick="goToPage('page-login'); updateModeText('หน้าแรก');" class="text-slate-500 text-xs font-bold hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg border border-slate-200 transition">
+                            <i class="fa-solid fa-chevron-left mr-1"></i> กลับสู่หน้าแรก
+                        </button>
+                        <h2 class="text-2xl font-black text-slate-900 flex items-center gap-2"><i class="fa-solid fa-chart-line text-emerald-600"></i> รายงานผลการทำงาน</h2>
+                        <p class="text-slate-500 text-xs">สรุปความคืบหน้างานของพนักงานทุกคน เปลี่ยนแปลงเพื่อดูรายงานและปฏิทินย้อนหลังได้ตลอดเวลา</p>
+                    </div>
+
+                    <!-- ส่วนกรอง เดือน / ปี ตรงตามรูปแบบสเก็ตช์ภาพวาด -->
+                    <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                        <div class="flex-grow md:flex-initial">
+                            <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">MONTH (เดือน)</label>
+                            <select id="calendar-month" onchange="renderCalendarDashboard(); renderExcelView();" class="w-full md:w-[140px] bg-slate-50 border-2 border-slate-200 text-slate-800 font-bold rounded-xl px-3.5 py-2.5 focus:outline-none text-sm transition focus:border-indigo-500">
+                                <option value="1">มกราคม</option>
+                                <option value="2">กุมภาพันธ์</option>
+                                <option value="3">มีนาคม</option>
+                                <option value="4">เมษายน</option>
+                                <option value="5">พฤษภาคม</option>
+                                <option value="6" selected>มิถุนายน</option>
+                                <option value="7">กรกฎาคม</option>
+                                <option value="8">สิงหาคม</option>
+                                <option value="9">กันยายน</option>
+                                <option value="10">ตุลาคม</option>
+                                <option value="11">พฤศจิกายน</option>
+                                <option value="12">ธันวาคม</option>
+                            </select>
+                        </div>
+                        <div class="flex-grow md:flex-initial">
+                            <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1">YEAR (ปี ค.ศ.)</label>
+                            <select id="calendar-year" onchange="renderCalendarDashboard(); renderExcelView();" class="w-full md:w-[100px] bg-slate-50 border-2 border-slate-200 text-slate-800 font-bold rounded-xl px-3.5 py-2.5 focus:outline-none text-sm transition focus:border-indigo-500">
+                                <option value="2026" selected>2026</option>
+                                <option value="2027">2027</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- เมนูแท็บสลับการดูรายงาน และปุ่มคำสั่ง -->
+            <div class="flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-3 bg-white p-2.5 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex flex-wrap gap-2 flex-grow lg:flex-initial">
+                    <!-- ปุ่มแท็บ 1: ปฏิทิน -->
+                    <button onclick="toggleAdminTab('calendar')" id="btn-tab-calendar" class="flex-1 sm:flex-initial py-2.5 px-4 rounded-xl text-xs font-extrabold transition-all bg-emerald-600 text-white shadow">
+                        <i class="fa-solid fa-calendar-days mr-1.5"></i> 1. มุมมองปฏิทินรายเดือน
+                    </button>
+                    <!-- ปุ่มแท็บ 2: ตาราง Excel แนวนอน -->
+                    <button onclick="toggleAdminTab('excel')" id="btn-tab-excel" class="flex-1 sm:flex-initial py-2.5 px-4 rounded-xl text-xs font-extrabold transition-all text-slate-600 hover:bg-slate-50">
+                        <i class="fa-solid fa-table-cells-horizontal mr-1.5"></i> 2. มุมมองตาราง Excel (1-31 วัน)
+                    </button>
+                    <!-- ปุ่มแท็บ 3: ชีทรับข้อมูลดิบ -->
+                    <button onclick="toggleAdminTab('sheet')" id="btn-tab-sheet" class="flex-1 sm:flex-initial py-2.5 px-4 rounded-xl text-xs font-extrabold transition-all text-slate-600 hover:bg-slate-50">
+                        <i class="fa-solid fa-file-invoice mr-1.5"></i> 3. ชีทรับข้อมูลจากฟอร์ม
+                    </button>
+                </div>
+                
+                <div class="flex gap-2">
+                    <!-- ปุ่มส่งออกเป็นไฟล์ CSV ไปยัง Excel -->
+                    <button onclick="exportToCSV()" class="flex-grow sm:flex-initial bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold px-4 py-2.5 rounded-xl border border-emerald-200 transition flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-file-csv"></i> 4. ส่งออก Excel/Sheets (.csv)
+                    </button>
+                    <!-- ปุ่มสำหรับเคลียร์ล้างความจำกรณีออฟไลน์ -->
+                    <button onclick="clearSystemData()" class="bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold px-3 py-2.5 rounded-xl border border-rose-200 transition flex items-center justify-center">
+                        <i class="fa-solid fa-trash-can mr-1"></i> ล้างข้อมูลชั่วคราว
+                    </button>
+                </div>
+            </div>
+
+            <!-- แสดงกล่องคู่มือจำแนกสีสถานะ -->
+            <div class="bg-white px-4 py-2.5 rounded-xl border border-slate-200 flex items-center gap-4 flex-wrap text-xs font-bold">
+                <span class="text-slate-500">แถบสีงาน:</span>
+                <span class="flex items-center gap-1.5 text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-md border border-emerald-200">
+                    <span class="w-3 h-3 bg-emerald-500 rounded"></span> งานที่ทำเสร็จวันนี้ (Complete) - สีเขียว
+                </span>
+                <span class="flex items-center gap-1.5 text-sky-800 bg-sky-100 px-2.5 py-1 rounded-md border border-sky-200">
+                    <span class="w-3 h-3 bg-sky-400 rounded"></span> กำลังดำเนินงาน (In-progress) - สีฟ้า
+                </span>
+            </div>
+
+            <!-- [รูปแบบ 1]: มุมมองปฏิทินรายเดือน -->
+            <div id="panel-tab-calendar" class="block bg-white rounded-2xl shadow-md border border-slate-200 p-4 sm:p-6 overflow-hidden">
+                <div class="grid grid-cols-7 gap-1 text-center font-bold text-xs text-slate-500 uppercase border-b border-slate-100 pb-3 mb-3">
+                    <div class="text-rose-600">อาทิตย์ (SUN)</div>
+                    <div>จันทร์ (MON)</div>
+                    <div>อังคาร (TUE)</div>
+                    <div>พุธ (WED)</div>
+                    <div>พฤหัสบดี (THU)</div>
+                    <div class="text-sky-600">ศุกร์ (FRI)</div>
+                    <div>เสาร์ (SAT)</div>
+                </div>
+
+                <div id="calendar-days-grid" class="grid grid-cols-7 gap-1.5 sm:gap-2.5 min-h-[420px]">
+                    <!-- รายชื่อวันต่าง ๆ วาดด้วย JS -->
+                </div>
+            </div>
+
+            <!-- [รูปแบบ 2]: มุมมองตาราง Excel แนวนอน (1-31 วันของแต่ละเดือน) -->
+            <div id="panel-tab-excel" class="hidden bg-white rounded-2xl shadow-md border border-slate-200 p-6 overflow-hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-extrabold text-slate-900 text-base flex items-center gap-2">
+                        <i class="fa-solid fa-table-cells text-indigo-600"></i>
+                        ตารางสรุปงานรายวันพนักงาน (Excel Horizon View)
+                    </h3>
+                </div>
+                <div class="overflow-x-auto border border-slate-200 rounded-xl">
+                    <table class="w-full text-left border-collapse min-w-[1200px]">
+                        <thead>
+                            <tr class="bg-slate-100 text-slate-700 font-bold text-xs border-b border-slate-200">
+                                <th class="p-3 sticky left-0 bg-slate-100 border-r border-slate-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] z-10 w-[160px]">ชื่อพนักงาน</th>
+                                <th id="excel-header-target" class="hidden"></th> <!-- จุดเชื่อมต่อ JS -->
+                            </tr>
+                        </thead>
+                        <tbody id="excel-table-body" class="divide-y divide-slate-100 text-xs">
+                            <!-- บรรทัดข้อมูลและแถบสีวาดจาก JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- [รูปแบบ 3]: ชีทรับข้อมูลจากฟอร์มดิบ -->
+            <div id="panel-tab-sheet" class="hidden bg-white rounded-2xl shadow-md border border-slate-200 p-6 overflow-hidden">
+                <h3 class="font-bold text-slate-950 text-sm mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-list-ul text-slate-500"></i>
+                    ชีทรับข้อมูลจากฟอร์ม (บันทึกรายตารางแบบ Real-time)
+                </h3>
+                
+                <div class="overflow-x-auto border border-slate-200 rounded-xl">
+                    <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                        <thead class="bg-slate-50 text-slate-700 font-bold uppercase border-b border-slate-200">
+                            <tr>
+                                <th class="p-3">ประทับเวลา (Timestamp)</th>
+                                <th class="p-3">ชื่อ</th>
+                                <th class="p-3">Complete</th>
+                                <th class="p-3">In-progress</th>
+                                <th class="p-3">Due-date</th>
+                                <th class="p-3">Plans</th>
+                            </tr>
+                        </thead>
+                        <tbody id="raw-table-body" class="divide-y divide-slate-100">
+                            <!-- แถวตารางจาก Google Sheets -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- ป๊อปอัพยืนยันการทำรายการสำเร็จ -->
+    <div id="custom-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-3xl p-6 max-w-sm w-full text-center space-y-4 shadow-2xl border border-slate-100">
+            <div id="modal-icon-container" class="w-16 h-16 rounded-full mx-auto flex items-center justify-center text-3xl"></div>
+            <div class="space-y-1">
+                <h4 id="modal-title" class="text-xl font-bold text-slate-900">หัวข้อ</h4>
+                <p id="modal-message" class="text-slate-500 text-sm leading-relaxed">รายละเอียด</p>
+            </div>
+            <button id="modal-close-btn" onclick="closeModal()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-4 rounded-xl transition">
+                รับทราบ
+            </button>
+        </div>
+    </div>
+
+    <!-- ป๊อปอัพรายละเอียดงานประจำวันรายบุคคลเมื่อกดในช่องปฏิทิน -->
+    <div id="calendar-day-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-3xl p-6 max-w-xl w-full flex flex-col max-h-[85vh] shadow-2xl border border-slate-100 transition-all duration-300 transform scale-95 opacity-0" id="calendar-day-modal-card">
+            <!-- ส่วนหัว Pop-up -->
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3.5 mb-4">
+                <div>
+                    <span class="text-xs text-indigo-600 font-bold block mb-0.5">ตารางกิจกรรมประจำวัน</span>
+                    <h4 id="calendar-day-modal-title" class="text-lg font-black text-slate-900">วันที่</h4>
+                </div>
+                <button onclick="closeCalendarDayModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-50 transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <!-- รายละเอียดของงาน -->
+            <div id="calendar-day-modal-content" class="overflow-y-auto pr-1 space-y-4 flex-grow max-h-[55vh]">
+                <!-- ข้อมูลงานของพนักงานทุกคนถูกส่งเข้ามาที่นี่ผ่าน JS -->
+            </div>
+            <!-- ส่วนท้ายปุ่มกดปิด -->
+            <div class="pt-4 border-t border-slate-100 mt-4 flex justify-end">
+                <button onclick="closeCalendarDayModal()" class="bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 px-6 rounded-xl text-sm transition shadow-md">
+                    ปิดหน้าต่าง
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ส่วนท้ายสุดของหน้า -->
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-slate-400 text-xs">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-2">
+            <p>© 2026 Daily Task App - เชื่อมต่อ Google Sheets เรียบร้อยแล้ว</p>
+            <p class="text-[10px] text-slate-400">พัฒนาด้วย Google Sheets Database Integration</p>
+        </div>
+    </footer>
+
+    <!-- ================== ส่วนระบบสั่งการงานแอปพลิเคชัน (JavaScript) ================== -->
+    <script>
+        // =========================================================
+        // 🔌 ตั้งค่า URL เว็บแอปของ GOOGLE APPS SCRIPT
+        // =========================================================
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzXEEK0k4kRfTsgrPsbvrKnsFAz9w4em0y_JzNczuUJJZf-pUm1Aeuj_moYSL3A66NB0A/exec"; 
+
+        // รายชื่อพนักงานขององค์กร
+        const employeesList = [
+            "THS",
+            "PTA",
+            "VSA",
+            "PSU",
+            "WMA",
+            "NCH",
+            "SSC",
+            "SDE"
+        ];
+
+        // ข้อมูลจำลองพรีเซ็ตเริ่มต้นในเครื่อง (แสดงชั่วคราวก่อนที่ระบบจะเชื่อมต่อสำเร็จ)
+        const defaultDatabase = [
+            { name: "THS", date: "2026-06-01", complete: "1. รายงานผลติดตั้งระบบไฟฟ้า\n2. สรุปผลการซ่อมบำรุงปั๊มน้ำ", inprogress: "1. ซ่อมท่อระบายน้ำที่โกดัง B\n2. เดินสายไฟทางออกใหม่", duedate: "2026-06-03", plans: "1. จัดระเบียบสต๊อกอะไหล่ไฟ", timestamp: "01/06/2026 17:01:22" },
+            { name: "PTA", date: "2026-06-01", complete: "1. สรุปผลจัดหาลิฟต์ขนนม\n2. ออกใบเสนอราคาส่วนกลาง", inprogress: "", duedate: "", plans: "1. เช็คเปรียบเทียบซัพพลายเออร์ใหม่", timestamp: "01/06/2026 17:15:40" },
+            { name: "VSA", date: "2026-06-02", complete: "1. สรุปผลความปลอดภัยคลัง\n2. ตรวจสอบสินค้าขาเข้าบ่าย", inprogress: "1. ซ่อมแซมกล่องพลาสติกขนาดใหญ่\n2. นัดรถขนถุงปูน", duedate: "2026-06-04", plans: "1. ตรวจพัสดุรับซ่อมคืนหน่วยงาน", timestamp: "02/06/2026 16:55:10" },
+            { name: "PSU", date: "2026-06-02", complete: "", inprogress: "1. เตรียมดึงสายไฟตึกสามชั้น\n2. ล้างระบบกรองแอร์ชั้นล่าง", duedate: "2026-06-05", plans: "1. ตรวจเช็คระบบกรองน้ำดื่มโรงครัว", timestamp: "02/06/2026 17:04:15" },
+            { name: "WMA", date: "2026-06-05", complete: "1. รายงานผลตอบรับการฝึกอบรม\n2. ส่งจดหมายแจ้งข่าวแผนกไอที", inprogress: "1. สรุปการดำเนินคดีการเคลมสินค้า\n2. อัปเกรดหน้าจอรันแอปฟอร์ม", duedate: "2026-06-08", plans: "1. ออกแบบสื่อโฆษณาเพจหลักบริษัท", timestamp: "05/06/2026 15:40:02" }
+        ];
+
+        let tasksDatabase = [];
+
+        // รันโปรแกรมครั้งแรกเมื่อเปิดหน้า
+        window.onload = function () {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            let mm = String(today.getMonth() + 1).padStart(2, '0');
+            let dd = String(today.getDate()).padStart(2, '0');
+            document.getElementById('form-date').value = `${yyyy}-${mm}-${dd}`;
+            document.getElementById('form-duedate').value = `${yyyy}-${mm}-${dd}`;
+
+            // ทำการเชื่อมต่อดึงข้อมูลออนไลน์
+            fetchDatabase();
+        }
+
+        // ดึงข้อมูลจริงจาก Google Sheets
+        function fetchDatabase() {
+            if (WEB_APP_URL && WEB_APP_URL.trim() !== "") {
+                fetch(WEB_APP_URL)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (Array.isArray(data)) {
+                            tasksDatabase = data.map(item => ({
+                                name: item.name,
+                                date: item.date || item.timestamp ? parseTimestampToDateString(item.timestamp || item.date) : "",
+                                complete: item.complete,
+                                inprogress: item.inprogress,
+                                duedate: item.duedate,
+                                plans: item.plans,
+                                timestamp: item.timestamp
+                            }));
+                            localStorage.setItem('re_designed_daily_tasks', JSON.stringify(tasksDatabase));
+                        }
+                        refreshAllViews();
+                    })
+                    .catch(err => {
+                        console.warn("ไม่สามารถซิงค์สดได้ขณะนี้ กำลังแสดงประวัติเดิมสำรองในเครื่องแทน...", err);
+                        loadOfflineData();
+                    });
+            } else {
+                loadOfflineData();
+            }
+        }
+
+        function loadOfflineData() {
+            const stored = localStorage.getItem('re_designed_daily_tasks');
+            if (stored) {
+                tasksDatabase = JSON.parse(stored);
+            } else {
+                tasksDatabase = [...defaultDatabase];
+                localStorage.setItem('re_designed_daily_tasks', JSON.stringify(tasksDatabase));
+            }
+            refreshAllViews();
+        }
+
+        function refreshAllViews() {
+            renderCalendarDashboard();
+            renderExcelView();
+            renderRawTable();
+        }
+
+        // สลับไปยังหน้าการทำงานต่าง ๆ
+        function goToPage(pageId) {
+            document.getElementById('page-login').classList.add('hidden');
+            document.getElementById('page-form').classList.add('hidden');
+            document.getElementById('page-admin').classList.add('hidden');
+
+            document.getElementById(pageId).classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function updateModeText(text) {
+            document.getElementById('current-mode-txt').innerText = text;
+        }
+
+        // ตรวจสอบเมื่อมีการเปลี่ยนชื่อในช่อง Dropdown เพื่อเปิด/ปิดช่องกรอกพิเศษ
+        function handleFormNameChange() {
+            const selectEl = document.getElementById('form-name');
+            const otherContainer = document.getElementById('other-input-container');
+            const otherInput = document.getElementById('form-other-name');
+
+            if (selectEl.value === "อื่นๆ") {
+                otherContainer.classList.remove('hidden');
+                setTimeout(() => {
+                    otherContainer.classList.remove('scale-95', 'opacity-0');
+                    otherContainer.classList.add('scale-100', 'opacity-100');
+                }, 50);
+                otherInput.setAttribute('required', 'true');
+                otherInput.focus();
+            } else {
+                otherContainer.classList.remove('scale-100', 'opacity-100');
+                otherContainer.classList.add('scale-95', 'opacity-0');
+                otherInput.removeAttribute('required');
+                setTimeout(() => {
+                    otherContainer.classList.add('hidden');
+                    otherInput.value = "";
+                }, 200);
+            }
+        }
+
+        // --- ระบบส่งคำตอบจากแบบฟอร์มพนักงานไปยัง Google Sheets ---
+        function submitGoogleForm() {
+            const selectName = document.getElementById('form-name').value;
+            const otherName = document.getElementById('form-other-name').value.trim();
+            const date = document.getElementById('form-date').value;
+            const complete = document.getElementById('form-complete').value.trim();
+            const inprogress = document.getElementById('form-inprogress').value.trim();
+            const duedate = document.getElementById('form-duedate').value;
+            const plans = document.getElementById('form-plans').value.trim();
+
+            if (!selectName) {
+                showModal('แจ้งเตือนการกรอก', 'กรุณาระบุ "ชื่อพนักงาน" ด้วยครับ', 'bg-rose-100 text-rose-700', 'fa-solid fa-triangle-exclamation');
+                return;
+            }
+
+            let name = selectName;
+            if (selectName === "อื่นๆ") {
+                if (!otherName) {
+                    showModal('แจ้งเตือนการกรอก', 'กรุณาระบุชื่อพนักงานเพิ่มเติมในช่องอื่นๆ ด้วยครับ', 'bg-rose-100 text-rose-700', 'fa-solid fa-triangle-exclamation');
+                    return;
+                }
+                name = `${otherName} (อื่นๆ)`;
+            }
+
+            if (!date) {
+                showModal('แจ้งเตือนการกรอก', 'กรุณาระบุ "วันที่ทำงาน" ด้วยครับ', 'bg-rose-100 text-rose-700', 'fa-solid fa-triangle-exclamation');
+                return;
+            }
+
+            const now = new Date();
+            const timestamp = `${String(now.getDate()).padStart(2,'0')}/${String(now.getMonth()+1).padStart(2,'0')}/${now.getFullYear()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+
+            const entry = {
+                name: name,
+                date: date,
+                complete: complete,
+                inprogress: inprogress,
+                duedate: inprogress ? duedate : "",
+                plans: plans,
+                timestamp: timestamp
+            };
+
+            // แสดงสถานะระหว่างส่งข้อมูล
+            showModal('กำลังบันทึก...', 'ระบบกำลังส่งข้อมูลขึ้น Google Sheets โปรดรอสักครู่...', 'bg-indigo-100 text-indigo-800', 'fa-solid fa-spinner animate-spin');
+
+            if (WEB_APP_URL && WEB_APP_URL.trim() !== "") {
+                fetch(WEB_APP_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(entry)
+                })
+                .then(() => {
+                    tasksDatabase.unshift(entry);
+                    localStorage.setItem('re_designed_daily_tasks', JSON.stringify(tasksDatabase));
+                    completeSubmissionSuccess(timestamp);
+                })
+                .catch(err => {
+                    console.error("ส่งข้อมูลไม่สำเร็จ บันทึกในเบราว์เซอร์:", err);
+                    tasksDatabase.unshift(entry);
+                    localStorage.setItem('re_designed_daily_tasks', JSON.stringify(tasksDatabase));
+                    completeSubmissionSuccess(timestamp);
+                });
+            } else {
+                tasksDatabase.unshift(entry);
+                localStorage.setItem('re_designed_daily_tasks', JSON.stringify(tasksDatabase));
+                setTimeout(() => {
+                    completeSubmissionSuccess(timestamp);
+                }, 1000);
+            }
+        }
+
+        function completeSubmissionSuccess(timestamp) {
+            clearFormInputs();
+            refreshAllViews();
+
+            showModal('ส่งรายงานสำเร็จ', 'ส่งข้อมูลเรียบร้อยแล้วและลงประทับเวลาที่ ' + timestamp, 'bg-emerald-100 text-emerald-800', 'fa-solid fa-circle-check');
+            
+            setTimeout(() => {
+                closeModal();
+                goToPage('page-login');
+                updateModeText('หน้าแรก');
+            }, 2500);
+        }
+
+        function clearFormInputs() {
+            document.getElementById('form-name').value = "";
+            document.getElementById('form-complete').value = "";
+            document.getElementById('form-inprogress').value = "";
+            document.getElementById('form-plans').value = "";
+            document.getElementById('form-other-name').value = "";
+            document.getElementById('other-input-container').classList.add('hidden');
+            
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            let mm = String(today.getMonth() + 1).padStart(2, '0');
+            let dd = String(today.getDate()).padStart(2, '0');
+            document.getElementById('form-date').value = `${yyyy}-${mm}-${dd}`;
+            document.getElementById('form-duedate').value = `${yyyy}-${mm}-${dd}`;
+        }
+
+        // --- ระบบสลับแผงควบคุมของทางฝั่งหัวหน้า ---
+        function toggleAdminTab(tabName) {
+            document.getElementById('panel-tab-calendar').classList.add('hidden');
+            document.getElementById('panel-tab-excel').classList.add('hidden');
+            document.getElementById('panel-tab-sheet').classList.add('hidden');
+
+            document.getElementById('btn-tab-calendar').className = "flex-1 sm:flex-initial py-2.5 px-4 rounded-xl text-xs font-extrabold transition-all text-slate-600 hover:bg-slate-50";
+            document.getElementById('btn-tab-excel').className = "flex-1 sm:flex-initial py-2.5 px-4 rounded-xl text-xs font-extrabold transition-all text-slate-600 hover:bg-slate-50";
+            document.getElementById('btn-tab-sheet').className = "flex-1 sm:flex-initial py-2.5 px-4 rounded-xl text-xs font-extrabold transition-all text-slate-600 hover:bg-slate-50";
+
+            if (tabName === 'calendar') {
+                document.getElementById('panel-tab-calendar').classList.remove('hidden');
+                document.getElementById('btn-tab-calendar').className = "flex-1 sm:flex-initial py-2.5 px-4 rounded-xl text-xs font-extrabold transition-all bg-emerald-600 text-white shadow";
+            } else if (tabName === 'excel') {
+                document.getElementById('panel-tab-excel').classList.remove('hidden');
+                document.getElementById('btn-tab-excel').className = "flex-1 sm:flex-initial py-2.5 px-4 rounded-xl text-xs font-extrabold transition-all bg-emerald-600 text-white shadow";
+                renderExcelView();
+            } else if (tabName === 'sheet') {
+                document.getElementById('panel-tab-sheet').classList.remove('hidden');
+                document.getElementById('btn-tab-sheet').className = "flex-1 sm:flex-initial py-2.5 px-4 rounded-xl text-xs font-extrabold transition-all bg-emerald-600 text-white shadow";
+                renderRawTable();
+            }
+        }
+
+        // --- 1. วาดหน้าปฏิทินรายเดือน และระบายกลุ่มสถานะสีงาน (เขียว/ฟ้า) ---
+        function renderCalendarDashboard() {
+            const selectedMonth = parseInt(document.getElementById('calendar-month').value);
+            const selectedYear = parseInt(document.getElementById('calendar-year').value);
+            const gridContainer = document.getElementById('calendar-days-grid');
+            gridContainer.innerHTML = '';
+
+            const firstDay = new Date(selectedYear, selectedMonth - 1, 1);
+            const firstDayOfWeek = firstDay.getDay(); // อาทิตย์ = 0
+            const totalDays = new Date(selectedYear, selectedMonth, 0).getDate();
+
+            for (let i = 0; i < firstDayOfWeek; i++) {
+                gridContainer.innerHTML += `<div class="bg-slate-50 rounded-xl p-1.5 border border-slate-100 min-h-[90px] opacity-25"></div>`;
+            }
+
+            for (let day = 1; day <= totalDays; day++) {
+                const dayStr = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                
+                const matchedTasks = tasksDatabase.filter(t => {
+                    if (t.date && t.date.includes(dayStr)) return true;
+                    const formattedString = parseTimestampToDateString(t.timestamp || t.date);
+                    return formattedString === dayStr;
+                });
+
+                let tasksHtml = '';
+                if (matchedTasks.length > 0) {
+                    tasksHtml = matchedTasks.map(item => {
+                        let segments = [];
+                        const shortName = item.name.split(' ')[0];
+
+                        // งานที่ทำเสร็จวันนี้ (Complete) -> แสดงผลสีเขียวทั้งในปฏิทินและ excel
+                        if (item.complete) {
+                            segments.push(`
+                                <div class="bg-emerald-100 text-emerald-800 border border-emerald-200 text-[10px] p-1.5 rounded-lg font-bold leading-tight flex flex-col gap-0.5 shadow-sm">
+                                    <div class="text-[9px] text-emerald-950 font-black flex items-center gap-1">
+                                        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
+                                        ${shortName} (เสร็จ)
+                                    </div>
+                                    <div class="whitespace-pre-line truncate max-w-full font-medium text-emerald-900">${item.complete}</div>
+                                </div>
+                            `);
+                        }
+
+                        // กำลังดำเนินงาน (In-progress) -> แสดงผลสีฟ้าทั้งในปฏิทินและ excel
+                        if (item.inprogress) {
+                            let dueHtml = item.duedate ? `<div class="text-[8px] text-sky-900 bg-sky-200/50 rounded px-1 mt-1 font-semibold w-fit">📅 กำหนด: ${formatThaiShortDate(item.duedate)}</div>` : '';
+                            segments.push(`
+                                <div class="bg-sky-100 text-sky-900 border border-sky-200 text-[10px] p-1.5 rounded-lg font-bold leading-tight flex flex-col gap-0.5 shadow-sm">
+                                    <div class="text-[9px] text-sky-950 font-black flex items-center gap-1">
+                                        <span class="w-1.5 h-1.5 bg-sky-400 rounded-full"></span>
+                                        ${shortName} (กำลังทำ)
+                                    </div>
+                                    <div class="whitespace-pre-line truncate max-w-full font-medium text-sky-800">${item.inprogress}</div>
+                                    ${dueHtml}
+                                </div>
+                            `);
+                        }
+
+                        return segments.join('');
+                    }).join('<div class="h-1.5"></div>');
+                } else {
+                    tasksHtml = `<div class="text-[9px] text-slate-300 italic text-center py-5">ไม่มีรายงาน</div>`;
+                }
+
+                const cellDate = new Date(selectedYear, selectedMonth - 1, day);
+                const isWeekend = (cellDate.getDay() === 0 || cellDate.getDay() === 6);
+                const weekendBg = isWeekend ? "bg-amber-50/40 border-amber-100" : "bg-white";
+
+                gridContainer.innerHTML += `
+                    <div onclick="showDayTasksModal('${dayStr}')" class="border rounded-xl p-2 min-h-[100px] flex flex-col justify-between hover:border-indigo-400 hover:shadow-md transition duration-200 cursor-pointer shadow-xs ${weekendBg}">
+                        <div class="flex justify-between items-center mb-1 pb-1 border-b border-slate-50">
+                            <span class="text-xs font-extrabold text-slate-800">${day}</span>
+                            ${matchedTasks.length > 0 ? `<span class="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse"></span>` : ''}
+                        </div>
+                        <div class="flex-grow space-y-1 overflow-y-auto max-h-[80px]">
+                            ${tasksHtml}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // --- 2. วาดตาราง Excel แนวนอน 1-31 วัน และระบายสีคุมสถานะ (เขียว/ฟ้า) ---
+        function renderExcelView() {
+            const selectedMonth = parseInt(document.getElementById('calendar-month').value);
+            const selectedYear = parseInt(document.getElementById('calendar-year').value);
+            const headerTarget = document.getElementById('excel-header-target');
+            const tableBody = document.getElementById('excel-table-body');
+
+            const parentRow = headerTarget.parentElement;
+            const oldHeaders = parentRow.querySelectorAll('.dynamic-day-header');
+            oldHeaders.forEach(el => el.remove());
+
+            const totalDays = new Date(selectedYear, selectedMonth, 0).getDate();
+
+            for (let day = 1; day <= 31; day++) {
+                const th = document.createElement('th');
+                th.className = "p-2 border-r border-slate-200 text-center text-[10px] w-[95px] dynamic-day-header shrink-0";
+                
+                if (day <= totalDays) {
+                    const cellDate = new Date(selectedYear, selectedMonth - 1, day);
+                    const isWeekend = (cellDate.getDay() === 0 || cellDate.getDay() === 6);
+                    th.className += isWeekend ? " bg-amber-50 text-amber-700 font-extrabold" : " bg-slate-50 text-slate-600 font-bold";
+                    th.innerText = `วันที่ ${day}`;
+                } else {
+                    th.className += " bg-slate-100 text-slate-300 font-normal";
+                    th.innerText = "-";
+                }
+                parentRow.appendChild(th);
+            }
+
+            // รวบรวมรายชื่อทั้งหมด (รวมถึงพนักงานพิเศษใน "อื่นๆ" ด้วย)
+            let activeEmployees = [...employeesList];
+            tasksDatabase.forEach(t => {
+                if (t.name && !activeEmployees.includes(t.name)) {
+                    activeEmployees.push(t.name);
+                }
+            });
+
+            tableBody.innerHTML = '';
+            activeEmployees.forEach(empName => {
+                let rowHtml = `<tr class="hover:bg-slate-50 transition border-b border-slate-200">
+                    <td class="p-3 font-extrabold text-slate-800 sticky left-0 bg-white border-r border-slate-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] z-10">${empName}</td>`;
+
+                for (let day = 1; day <= 31; day++) {
+                    if (day <= totalDays) {
+                        const dateStr = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                        
+                        const entries = tasksDatabase.filter(t => {
+                            if (t.name !== empName) return false;
+                            if (t.date && t.date.includes(dateStr)) return true;
+                            const formattedString = parseTimestampToDateString(t.timestamp || t.date);
+                            return formattedString === dateStr;
+                        });
+
+                        if (entries.length > 0) {
+                            let cellContent = '';
+                            entries.forEach(item => {
+                                // งานที่ทำเสร็จวันนี้ (Complete) -> แสดงผลสีเขียว
+                                if (item.complete) {
+                                    cellContent += `<div class="bg-emerald-50 text-emerald-800 border border-emerald-100 p-1.5 rounded-lg text-[10px] mb-1 font-semibold leading-relaxed shadow-xs">
+                                        <div class="font-black text-emerald-950 mb-0.5">✅ Complete:</div>
+                                        <div class="whitespace-pre-wrap font-medium">${item.complete}</div>
+                                    </div>`;
+                                }
+                                // กำลังดำเนินงาน (In-progress) -> แสดงผลสีฟ้า
+                                if (item.inprogress) {
+                                    const dueText = item.duedate ? `<div class="text-[8px] text-sky-900 bg-sky-200/50 rounded px-1 py-0.5 mt-1 font-bold w-fit">📅 กำหนด: ${formatThaiShortDate(item.duedate)}</div>` : '';
+                                    cellContent += `<div class="bg-sky-50 text-sky-900 border border-sky-100 p-1.5 rounded-lg text-[10px] mb-1 font-semibold leading-relaxed shadow-xs">
+                                        <div class="font-black text-sky-950 mb-0.5">🏗️ In-progress:</div>
+                                        <div class="whitespace-pre-wrap font-medium">${item.inprogress}</div>
+                                        ${dueText}
+                                    </div>`;
+                                }
+                            });
+                            rowHtml += `<td class="p-2 border-r border-slate-200 align-top">${cellContent || '<span class="text-slate-300">-</span>'}</td>`;
+                        } else {
+                            rowHtml += `<td class="p-2 border-r border-slate-200 text-slate-300 text-center align-middle italic">-</td>`;
+                        }
+                    } else {
+                        rowHtml += `<td class="p-2 border-r border-slate-200 bg-slate-50 text-slate-300 text-center align-middle">-</td>`;
+                    }
+                }
+
+                rowHtml += `</tr>`;
+                tableBody.innerHTML += rowHtml;
+            });
+        }
+
+        // --- 3. แสดงแผ่นชีทข้อมูลจากฟอร์มดิบทั้งหมด ---
+        function renderRawTable() {
+            const tbody = document.getElementById('raw-table-body');
+            if (tasksDatabase.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400 font-bold">ยังไม่มีข้อมูลรายงานส่งเข้ามาบันทึก</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = tasksDatabase.map(row => {
+                const completeCell = row.complete 
+                    ? `<div class="bg-emerald-50 text-emerald-800 border border-emerald-100 p-2 rounded-xl text-xs whitespace-pre-wrap font-semibold leading-relaxed shadow-xs"><span class="font-bold block text-[10px] text-emerald-950 mb-1">✅ COMPLETE:</span>${row.complete}</div>` 
+                    : '<span class="text-slate-300">-</span>';
+
+                const inprogressCell = row.inprogress 
+                    ? `<div class="bg-sky-50 text-sky-900 border border-sky-100 p-2 rounded-xl text-xs whitespace-pre-wrap font-semibold leading-relaxed shadow-xs"><span class="font-bold block text-[10px] text-sky-950 mb-1">🏗️ IN-PROGRESS:</span>${row.inprogress}</div>` 
+                    : '<span class="text-slate-300">-</span>';
+
+                const dueCell = row.duedate 
+                    ? `<span class="bg-slate-100 border text-slate-700 px-2.5 py-1 rounded-full text-xs font-mono font-bold"><i class="fa-solid fa-calendar-day mr-1"></i>${formatThaiShortDate(row.duedate)}</span>` 
+                    : '<span class="text-slate-300">-</span>';
+
+                const plansCell = row.plans 
+                    ? `<div class="text-slate-600 text-xs whitespace-pre-wrap leading-relaxed">${row.plans}</div>` 
+                    : '<span class="text-slate-300">-</span>';
+
+                return `
+                    <tr class="hover:bg-slate-50/50 transition">
+                        <td class="p-3 text-slate-400 font-mono text-[11px] font-bold">${row.timestamp || row.date}</td>
+                        <td class="p-3 font-extrabold text-slate-900 text-sm whitespace-nowrap"><i class="fa-regular fa-user text-slate-400 mr-1"></i>${row.name}</td>
+                        <td class="p-3">${completeCell}</td>
+                        <td class="p-3">${inprogressCell}</td>
+                        <td class="p-3 align-middle">${dueCell}</td>
+                        <td class="p-3">${plansCell}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // --- 4. ปุ่มส่งออกไฟล์ CSV ไปใช้งานต่อใน EXCEL / GOOGLE SHEETS ---
+        function exportToCSV() {
+            if (tasksDatabase.length === 0) {
+                showModal('แจ้งเตือน', 'ไม่มีข้อมูลประวัติสำหรับการส่งออกไฟล์', 'bg-rose-100 text-rose-700', 'fa-solid fa-triangle-exclamation');
+                return;
+            }
+
+            let csvContent = "\uFEFF"; // ป้องกันสระภาษาไทยเพี้ยนตอนเปิดบน Microsoft Excel
+            csvContent += "ประทับเวลา,ชื่อ,Complete,In-progress,Due-date,Plans\n";
+
+            tasksDatabase.forEach(item => {
+                const timestampStr = item.timestamp || "";
+                const escapedName = `"${item.name.replace(/"/g, '""')}"`;
+                const escapedComplete = `"${(item.complete || "").replace(/"/g, '""')}"`;
+                const escapedInprogress = `"${(item.inprogress || "").replace(/"/g, '""')}"`;
+                const dueStr = item.duedate || "";
+                const escapedPlans = `"${(item.plans || "").replace(/"/g, '""')}"`;
+
+                csvContent += `${timestampStr},${escapedName},${escapedComplete},${escapedInprogress},${dueStr},${escapedPlans}\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `รายงานผลการทำงาน_DailyReport.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function clearSystemData() {
+            const confirmed = confirm("คุณมั่นใจหรือไม่ว่าต้องการล้างข้อมูลชั่วคราวที่จัดเก็บสะสมไว้ในเบราว์เซอร์เครื่องนี้เพื่อรีเซ็ตใหม่?");
+            if (confirmed) {
+                tasksDatabase = [];
+                localStorage.setItem('re_designed_daily_tasks', JSON.stringify([]));
+                refreshAllViews();
+                showModal('ล้างค่าสำเร็จ', 'ข้อมูลจำลองในเครื่องทั้งหมดถูกคืนค่าสะอาดเรียบร้อย', 'bg-rose-100 text-rose-700', 'fa-solid fa-trash-can');
+            }
+        }
+
+        // ฟังก์ชันในการดึงและเปิดแสดงรายการงานของทุกคนแบบ Pop-up รายวัน
+        function showDayTasksModal(dateString) {
+            const modal = document.getElementById('calendar-day-modal');
+            const modalCard = document.getElementById('calendar-day-modal-card');
+            const titleEl = document.getElementById('calendar-day-modal-title');
+            const contentEl = document.getElementById('calendar-day-modal-content');
+
+            // เปลี่ยนฟอร์แมตหัวเรื่องแสดงภาษาไทย เช่น "20 มิถุนายน 2569"
+            titleEl.innerText = formatDateThai(dateString);
+            contentEl.innerHTML = '';
+
+            // ฟิลเตอร์คัดเลือกงานทั้งหมดของทุกคนในวันดังกล่าว
+            const matchedDayTasks = tasksDatabase.filter(t => {
+                if (t.date && t.date.includes(dateString)) return true;
+                const formattedString = parseTimestampToDateString(t.timestamp || t.date);
+                return formattedString === dateString;
+            });
+
+            if (matchedDayTasks.length === 0) {
+                contentEl.innerHTML = `
+                    <div class="text-center py-12 text-slate-400">
+                        <div class="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 border border-slate-100">
+                            <i class="fa-solid fa-calendar-xmark text-2xl text-slate-300"></i>
+                        </div>
+                        <p class="font-bold text-sm text-slate-700">ไม่มีรายงานภารกิจในวันนี้</p>
+                        <p class="text-xs text-slate-400 mt-1">ยังไม่มีการส่งประวัติบันทึกงานของพนักงานทุกคนเข้ามาในระบบ</p>
+                    </div>
+                `;
+            } else {
+                matchedDayTasks.forEach(task => {
+                    const initials = task.name.substring(0, 2).toUpperCase();
+                    
+                    let taskHtml = `
+                        <div class="bg-slate-50 rounded-2xl p-4 border border-slate-150 space-y-3.5 shadow-sm">
+                            <div class="flex items-center justify-between border-b border-slate-200 pb-2 mb-1">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-black text-white bg-indigo-600">
+                                        ${initials}
+                                    </div>
+                                    <span class="font-extrabold text-slate-900 text-sm">${task.name}</span>
+                                </div>
+                                <span class="text-[10px] text-slate-400 font-semibold font-mono"><i class="fa-regular fa-clock mr-1"></i>${task.timestamp ? task.timestamp.split(' ')[1] : 'ไม่ระบุเวลา'}</span>
+                            </div>
+                            <div class="space-y-3">
+                    `;
+
+                    if (task.complete) {
+                        taskHtml += `
+                            <div class="space-y-1">
+                                <span class="inline-flex items-center gap-1.5 text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 px-2.5 py-0.5 rounded-md">
+                                    <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span> งานที่ทำเสร็จวันนี้ (Complete)
+                                </span>
+                                <p class="text-xs text-slate-700 font-medium pl-1 leading-relaxed whitespace-pre-wrap">${task.complete}</p>
+                            </div>
+                        `;
+                    }
+
+                    if (task.inprogress) {
+                        const dueLabel = task.duedate ? `<span class="text-[9px] bg-sky-200/50 text-sky-900 px-1.5 py-0.5 rounded-md font-bold ml-2">📅 กำหนดเสร็จ: ${formatThaiShortDate(task.duedate)}</span>` : '';
+                        taskHtml += `
+                            <div class="space-y-1">
+                                <span class="inline-flex items-center gap-1.5 text-[10px] font-bold bg-sky-100 text-sky-800 border border-sky-200 px-2.5 py-0.5 rounded-md">
+                                    <span class="w-1.5 h-1.5 bg-sky-400 rounded-full"></span> กำลังดำเนินงาน (In-progress)
+                                </span>
+                                ${dueLabel}
+                                <p class="text-xs text-slate-700 font-medium pl-1 leading-relaxed whitespace-pre-wrap">${task.inprogress}</p>
+                            </div>
+                        `;
+                    }
+
+                    if (task.plans) {
+                        taskHtml += `
+                            <div class="space-y-1">
+                                <span class="inline-flex items-center gap-1.5 text-[10px] font-bold bg-slate-200 text-slate-700 border border-slate-300 px-2.5 py-0.5 rounded-md">
+                                    <span class="w-1.5 h-1.5 bg-slate-400 rounded-full"></span> แผนงานวันพรุ่งนี้ (Plans)
+                                </span>
+                                <p class="text-xs text-slate-600 font-medium pl-1 leading-relaxed whitespace-pre-wrap">${task.plans}</p>
+                            </div>
+                        `;
+                    }
+
+                    taskHtml += `
+                            </div>
+                        </div>
+                    `;
+                    contentEl.innerHTML += taskHtml;
+                });
+            }
+
+            // แสดง Modal ด้วย Animation ค่อยๆ สไลด์และจางขยาย
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalCard.classList.remove('opacity-0', 'scale-95');
+                modalCard.classList.add('opacity-100', 'scale-100');
+            }, 50);
+        }
+
+        // ปิดหน้าต่าง Pop-up สรุปงานปฏิทิน
+        function closeCalendarDayModal() {
+            const modal = document.getElementById('calendar-day-modal');
+            const modalCard = document.getElementById('calendar-day-modal-card');
+            
+            modalCard.classList.remove('opacity-100', 'scale-100');
+            modalCard.classList.add('opacity-0', 'scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 250);
+        }
+
+        // ฟังก์ชันช่วยเหลือแปลงสลับวันที่
+        function parseTimestampToDateString(timeString) {
+            if (!timeString) return "";
+            if (timeString.includes('-')) return timeString.substring(0, 10); // ISO format yyyy-mm-dd
+            // เผื่อเป็น DD/MM/YYYY
+            const pts = timeString.split(' ')[0].split('/');
+            if (pts.length === 3) {
+                return `${pts[2]}-${pts[1].padStart(2,'0')}-${pts[0].padStart(2,'0')}`;
+            }
+            return timeString;
+        }
+
+        function formatThaiShortDate(dateStr) {
+            if (!dateStr) return "";
+            const parts = dateStr.split('-');
+            if (parts.length < 3) return dateStr;
+            const thYear = parseInt(parts[0]) + 543;
+            return `${parts[2]}/${parts[1]}/${thYear}`;
+        }
+
+        // แปลงฟอร์แมตวันที่แบบเต็ม เพื่อนำไปเขียนบนหัวหัวข้อ Pop-up เช่น "20 มิถุนายน 2569"
+        function formatDateThai(dateStr) {
+            if (!dateStr) return "";
+            const months = [
+                "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+                "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+            ];
+            const parts = dateStr.split('-');
+            if (parts.length < 3) return dateStr;
+            const day = parseInt(parts[2]);
+            const month = months[parseInt(parts[1]) - 1];
+            const year = parseInt(parts[0]) + 543;
+            return `${day} ${month} ${year}`;
+        }
+
+        // แสดงสไลด์เตือนป๊อปอัพทั่วไป
+        function showModal(title, msg, colorClass, iconClass) {
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerText = msg;
+
+            const iconContainer = document.getElementById('modal-icon-container');
+            iconContainer.className = `w-16 h-16 rounded-full mx-auto flex items-center justify-center text-3xl ${colorClass}`;
+            iconContainer.innerHTML = `<i class="${iconClass}"></i>`;
+
+            document.getElementById('custom-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('custom-modal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
