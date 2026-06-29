@@ -695,9 +695,9 @@
                             `);
                         }
 
-                        // กำลังดำเนินงาน (In-progress) -> แสดงผลสีฟ้าทั้งในปฏิทินและ excel
+                        // กำลังดำเนินงาน (In-progress) -> แสดงผลสีฟ้าทั้งในปฏิทินและ excel (ปรับแสดงเฉพาะวันที่กำหนดเสร็จเท่านั้น ค.ศ.)
                         if (item.inprogress) {
-                            let dueHtml = item.duedate ? `<div class="text-[8px] text-sky-900 bg-sky-200/50 rounded px-1 mt-1 font-semibold w-fit">📅 กำหนดเสร็จ: ${item.duedate.split('T')[0].split('-').reverse().join('/')}</div>` : '';
+                            let dueHtml = item.duedate ? `<div class="text-[8px] text-sky-900 bg-sky-200/50 rounded px-1.5 py-0.5 mt-1 font-semibold w-fit">📅 กำหนดเสร็จ: ${formatThaiShortDate(item.duedate)}</div>` : '';
                             segments.push(`
                                 <div class="bg-sky-100 text-sky-900 border border-sky-200 text-[10px] p-1.5 rounded-lg font-bold leading-tight flex flex-col gap-0.5 shadow-sm">
                                     <div class="text-[9px] text-sky-950 font-black flex items-center gap-1">
@@ -797,9 +797,9 @@
                                         <div class="whitespace-pre-wrap font-medium">${item.complete}</div>
                                     </div>`;
                                 }
-                                // กำลังดำเนินงาน (In-progress) -> แสดงผลสีฟ้า
+                                // กำลังดำเนินงาน (In-progress) -> แสดงผลสีฟ้า (ปรับแสดงเฉพาะวันที่กำหนดเสร็จเท่านั้น ค.ศ.)
                                 if (item.inprogress) {
-                                    const dueText = item.duedate ? `<div class="text-[8px] text-sky-900 bg-sky-200/50 rounded px-1 py-0.5 mt-1 font-bold w-fit">📅 กำหนดเสร็จ: ${item.duedate.split('T')[0].split('-').reverse().join('/')}</div>` : '';
+                                    const dueText = item.duedate ? `<div class="text-[8px] text-sky-900 bg-sky-200/50 rounded px-1.5 py-0.5 mt-1 font-bold w-fit">📅 กำหนดเสร็จ: ${formatThaiShortDate(item.duedate)}</div>` : '';
                                     cellContent += `<div class="bg-sky-50 text-sky-900 border border-sky-100 p-1.5 rounded-lg text-[10px] mb-1 font-semibold leading-relaxed shadow-xs">
                                         <div class="font-black text-sky-950 mb-0.5">🏗️ In-progress:</div>
                                         <div class="whitespace-pre-wrap font-medium">${item.inprogress}</div>
@@ -812,7 +812,8 @@
                             rowHtml += `<td class="p-2 border-r border-slate-200 text-slate-300 text-center align-middle italic">-</td>`;
                         }
                     } else {
-                        rowHtml += `<td class="p-2 border-r border-slate-200 bg-slate-50 text-slate-300 text-center align-middle">-</td>`;
+                        rowHtml += `<td class="p-2 border-r border-slate-200 bg-slate-50 text-slate-300 text-center align-middle">-</td>
+                        `;
                     }
                 }
 
@@ -839,7 +840,7 @@
                     : '<span class="text-slate-300">-</span>';
 
                 const dueCell = row.duedate 
-                    ? `<span class="bg-slate-100 border text-slate-700 px-2.5 py-1 rounded-full text-xs font-mono font-bold"><i class="fa-solid fa-calendar-day mr-1"></i>${item.duedate.split('T')[0].split('-').reverse().join('/')}</span>` 
+                    ? `<span class="bg-slate-100 border text-slate-700 px-2.5 py-1 rounded-full text-xs font-mono font-bold"><i class="fa-solid fa-calendar-day mr-1"></i>${formatThaiShortDate(row.duedate)}</span>` 
                     : '<span class="text-slate-300">-</span>';
 
                 const plansCell = row.plans 
@@ -907,7 +908,7 @@
             const titleEl = document.getElementById('calendar-day-modal-title');
             const contentEl = document.getElementById('calendar-day-modal-content');
 
-            // เปลี่ยนฟอร์แมตหัวเรื่องแสดงภาษาไทย เช่น "20 มิถุนายน 2569"
+            // เปลี่ยนฟอร์แมตหัวเรื่องแสดงภาษาไทย เช่น "20 มิถุนายน ค.ศ. 2026"
             titleEl.innerText = formatDateThai(dateString);
             contentEl.innerHTML = '';
 
@@ -958,7 +959,7 @@
                     }
 
                     if (task.inprogress) {
-                        const dueLabel = task.duedate ? `<span class="text-[9px] bg-sky-200/50 text-sky-900 px-1.5 py-0.5 rounded-md font-bold ml-2">📅 กำหนดเสร็จ: ${item.duedate.split('T')[0].split('-').reverse().join('/')}</span>` : '';
+                        const dueLabel = task.duedate ? `<span class="text-[9px] bg-sky-200/50 text-sky-900 px-1.5 py-0.5 rounded-md font-bold ml-2">📅 กำหนดเสร็จ: ${formatThaiShortDate(task.duedate)}</span>` : '';
                         taskHtml += `
                             <div class="space-y-1">
                                 <span class="inline-flex items-center gap-1.5 text-[10px] font-bold bg-sky-100 text-sky-800 border border-sky-200 px-2.5 py-0.5 rounded-md">
@@ -1022,15 +1023,34 @@
             return timeString;
         }
 
+        // ฟังก์ชันแปลงวันที่เป็น ค.ศ. แบบเสถียร รองรับทั้ง ISO format และ พ.ศ.
         function formatThaiShortDate(dateStr) {
             if (!dateStr) return "";
-            const parts = dateStr.split('-');
-            if (parts.length < 3) return dateStr;
-            const thYear = parseInt(parts[0]) + 543;
-            return `${parts[2]}/${parts[1]}/${thYear}`;
+            // ลบส่วนรายละเอียดเวลา ISO 'T' ออกเพื่อความสะอาด
+            let clean = dateStr.split('T')[0];
+            
+            // ตรวจสอบโครงสร้าง yyyy-mm-dd
+            let parts = clean.split('-');
+            if (parts.length === 3) {
+                const year = parts[0]; // เป็น ค.ศ. อยู่แล้ว
+                const month = parts[1].padStart(2, '0');
+                const day = parts[2].padStart(2, '0');
+                return `${day}/${month}/${year}`;
+            }
+            
+            // กรณีเป็น dd/mm/yyyy อยู่แล้ว (เช่น นำค่าสะสมเดิมมาใช้)
+            if (dateStr.includes('/')) {
+                let slashParts = dateStr.split('/');
+                if (slashParts.length === 3) {
+                    let year = parseInt(slashParts[2]);
+                    if (year > 2500) year = year - 543; // แปลง พ.ศ. กลับเป็น ค.ศ.
+                    return `${slashParts[0].padStart(2, '0')}/${slashParts[1].padStart(2, '0')}/${year}`;
+                }
+            }
+            return dateStr;
         }
 
-        // แปลงฟอร์แมตวันที่แบบเต็ม เพื่อนำไปเขียนบนหัวหัวข้อ Pop-up เช่น "20 มิถุนายน 2569"
+        // แปลงฟอร์แมตวันที่แบบเต็ม เพื่อนำไปเขียนบนหัวข้อ Pop-up เช่น "20 มิถุนายน ค.ศ. 2026"
         function formatDateThai(dateStr) {
             if (!dateStr) return "";
             const months = [
@@ -1041,8 +1061,8 @@
             if (parts.length < 3) return dateStr;
             const day = parseInt(parts[2]);
             const month = months[parseInt(parts[1]) - 1];
-            const year = parseInt(parts[0]) + 543;
-            return `${day} ${month} ${year}`;
+            const year = parseInt(parts[0]); // คริสต์ศักราช (ค.ศ.)
+            return `${day} ${month} ค.ศ. ${year}`;
         }
 
         // แสดงสไลด์เตือนป๊อปอัพทั่วไป
